@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: challenge
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-ubuntu
+  template:
+    metadata:
+      labels:
+        app: my-ubuntu
+    spec:
+      containers:
+      - name: my-ubuntu-container
+        image: ubuntu:latest
+        command: ["/bin/bash", "-c", "--"]
+        args: ["while true; do sleep 3600; done"]
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080

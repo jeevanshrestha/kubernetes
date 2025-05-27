@@ -1,0 +1,4 @@
+kind: namespaces
+apiVersion: v1
+metadata:
+  name: stage-app

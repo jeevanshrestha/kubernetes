@@ -1,0 +1,69 @@
+minikube start
+
+kubectl get nodes
+
+#Pod
+
+kubectl create -f pod.yml
+
+kubectl get pod
+
+kubectl apply -f pod.yml
+
+
+kubectl delete -f pod.yml
+
+#ReplicaSet
+
+kubectl create -f replicaset.yml
+
+kubectl get pods
+
+watch kubectl get pods
+
+kubectl delete pod myreplicaset-kxcth
+
+kubectl delete -f replicaset.yml 
+
+#Deployments
+
+kubectl create -f deployments.yml 
+
+kubectl get rs
+
+kubectl get deploy 
+
+kubectl get deploy my-deployments
+
+kubectl describe pods
+
+kubectl create -f multi-deployments.yml -v=8
+
+watch kubectl get pods
+
+kubectl delete -f multi-deployments.yml
+
+#connect to container
+kubectl exec -it multi-deployment-55559cb44f-96pdj -c server -- /bin/sh
+
+kubectl exec -it multi-deployment-55559cb44f-96pdj -c server -- bash
+
+kubectl logs init-deployment-7679c76df9-p5fhx -c my-init 
+
+
+# Ingress
+minikube addons enable ingress
+
+kubectl get service
+
+#kubectl port-forward service/myapp 8080:8080
+
+kubectl get ingress
+ 
+NAME          CLASS   HOSTS          ADDRESS        PORTS   AGE
+web-ingress   nginx   mysite.local   192.168.64.3   80      12m
+
+sudo nano /private/etc/hosts
+192.168.64.3 mysite.local
+
+
