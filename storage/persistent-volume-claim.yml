@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mypvc01
+spec:
+  storageClassName: admstor
+  resources:
+    requests:
+      storage: 1Gi 
+  accessModes:
+    - ReadWriteOnce
+  volumeName: mypv01

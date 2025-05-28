@@ -67,3 +67,9 @@ sudo nano /private/etc/hosts
 192.168.64.3 mysite.local
 
 
+kubectl get ns 
+
+kubectl run -it test-ubuntu --image=ubuntu:latest -- bash
+
+kubectl delete pods test-ubuntu
+

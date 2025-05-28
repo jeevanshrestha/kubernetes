@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
-namespaces: stage-app
 metadata:
   name: my-deployment
+  namespace: my-apps  
 spec:
   replicas: 2
   selector:
