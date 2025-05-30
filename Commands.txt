@@ -68,3 +68,9 @@ sudo nano /private/etc/hosts
 
 
 kubectl create configmap nginx-config --from-file=nginx.conf
+
+kubectl logs pod/challenge4-pod #check logs for pods
+kubectl describe pod pod/challenge4 #Check all the details and issues related to pod
+kubectl describe <any> #check details and issues about any kubernetes object
+
+kubectl get svc  challenge4-service -o yaml > challenge-service.yml # generate yml from running service
