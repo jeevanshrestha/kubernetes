@@ -1,3 +1,9 @@
+## Challenge 4: Create a Pod with a Persistent Volume and ConfigMap
+# This YAML file defines a Persistent Volume, Persistent Volume Claim, Pod, and Service for Challenge 4.
+#kubectl create configmap nginx-config --from-file=nginx.conf
+#kubectl exec -it challenge4-pod -- bash
+#cd /etc/nginx
+#cat nginx.conf
 apiVersion: v1
 kind: PersistentVolume
 metadata:

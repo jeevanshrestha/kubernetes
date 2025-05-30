@@ -67,3 +67,4 @@ sudo nano /private/etc/hosts
 192.168.64.3 mysite.local
 
 
+kubectl create configmap nginx-config --from-file=nginx.conf
