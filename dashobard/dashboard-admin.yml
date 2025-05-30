@@ -1,0 +1,23 @@
+
+#kubectl apply -f dashboard-admin.yml
+#kubectl -n kubernetes-dashboard create token admin-user
+# This YAML file creates a service account and a cluster role binding for the Kubernetes Dashboard admin user.
+# It grants the service account cluster-admin permissions, allowing full access to the Kubernetes cluster.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard
