@@ -1,0 +1,32 @@
+brew upgrade
+
+brew install awscli
+
+brew install kops
+
+export KOPS_CLUSTER_NAME=kubecourse.k8s.local
+
+export KOPS_STATE_STORE=s3://jeeves-k8s-sydney
+
+ kops create cluster \
+  --node-count=3 \
+  --node-size=t2.micro \
+  --control-plane-size=t2.micro \
+  --zones=ap-southeast-2a,ap-southeast-2b,ap-southeast-2c \
+  --name=kubecourse.k8s.local \
+  --state=s3://jeeves-k8s-sydney
+
+
+kops update cluster --name kubecourse.k8s.local --yes
+
+kops validate cluster --name kubecourse.k8s.local
+
+kops delete cluster --name $KOPS_CLUSTER_NAME --state $KOPS_STATE_STORE --yes
+
+
+kubectl config delete-context kubecourse.k8s.local
+kubectl config delete-cluster kubecourse.k8s.local
+
+
+aws s3 rm $KOPS_STATE_STORE --recursive
+aws s3 rb $KOPS_STATE_STORE
