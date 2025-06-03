@@ -1,4 +1,4 @@
-kind: namespaces
 apiVersion: v1
+kind: Namespace
 metadata:
-  name: stage-app
+  name: my-namespace

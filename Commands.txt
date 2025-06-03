@@ -67,9 +67,19 @@ sudo nano /private/etc/hosts
 192.168.64.3 mysite.local
 
 
+<<<<<<< HEAD
 kubectl get ns 
 
 kubectl run -it test-ubuntu --image=ubuntu:latest -- bash
 
 kubectl delete pods test-ubuntu
 
+=======
+kubectl create configmap nginx-config --from-file=nginx.conf
+
+kubectl logs pod/challenge4-pod #check logs for pods
+kubectl describe pod pod/challenge4 #Check all the details and issues related to pod
+kubectl describe <any> #check details and issues about any kubernetes object
+
+kubectl get svc  challenge4-service -o yaml > challenge-service.yml # generate yml from running service
+>>>>>>> 905f0b0d81663ab8b32c4f43f0be2744fb6d68e7

@@ -1,0 +1,86 @@
+## Challenge 4: Create a Pod with a Persistent Volume and ConfigMap
+# This YAML file defines a Persistent Volume, Persistent Volume Claim, Pod, and Service for Challenge 4.
+#kubectl create configmap nginx-config --from-file=nginx.conf
+#kubectl exec -it challenge4-pod -- bash
+#cd /etc/nginx
+#cat nginx.conf
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: challenge4-pv
+spec:
+  storageClassName: challenge4
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/challenge4-pv
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: challenge4-pvc
+spec:
+  storageClassName: challenge4
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: challenge4-pod
+  labels:
+    app: challenge4
+spec:
+  containers:
+    - name: challenge4-container
+      image: nginx:latest 
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "500m"
+        limits:
+          memory: "512Mi"
+          cpu: "1"  
+      ports:
+        - containerPort: 80
+      volumeMounts:
+        - mountPath: /var/www/html
+          name: challenge4-vol
+        - mountPath: /etc/nginx/nginx.conf
+          name: challenge4-nginx-config
+          subPath: nginx.conf
+
+  volumes:
+    - name: challenge4-vol
+      persistentVolumeClaim:
+        claimName: challenge4-pvc
+    - name: challenge4-nginx-config
+      configMap:
+        name: nginx-config
+        items:
+          - key: nginx.conf
+            path: nginx.conf
+
+
+  restartPolicy: Always
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: challenge4-service
+spec:
+  selector:
+    app: challenge4
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 80
+
+ 
