@@ -6,15 +6,14 @@ brew install kops
 
 export KOPS_CLUSTER_NAME=kubecourse.k8s.local
 
-export KOPS_STATE_STORE=s3://jeeves-k8s-sydney
+export KOPS_STATE_STORE= 
 
  kops create cluster \
   --node-count=3 \
   --node-size=t2.micro \
   --control-plane-size=t2.micro \
   --zones=ap-southeast-2a,ap-southeast-2b,ap-southeast-2c \
-  --name=kubecourse.k8s.local \
-  --state=s3://jeeves-k8s-sydney
+  --name=kubecourse.k8s.local \ 
 
 
 kops update cluster --name kubecourse.k8s.local --yes
