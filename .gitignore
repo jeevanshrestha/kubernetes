@@ -1,0 +1,41 @@
+# Kubernetes related files
+*.yaml
+*.yml
+*.json
+
+# Helm files
+charts/
+*.tgz
+release.yaml
+
+# Kubernetes secrets and keys
+secrets.yaml
+secret*.yml
+*.secret.yaml
+*.key
+*.pem
+*.crt
+
+# Sensitive environment files
+.env
+.env.*
+*.env
+
+# kubeconfig files
+kubeconfig
+.kube/
+.kube/config
+
+# Logs
+*.log
+
+# Misc
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.bak
+*.tmp
+node_modules/
+dist/
+build/

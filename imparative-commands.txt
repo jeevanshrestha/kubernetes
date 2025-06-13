@@ -1,0 +1,146 @@
+eksctl create cluster --name eksdemo1  --region=ap-southeast-2 --zones=ap-southeast-2a,ap-southeast-2b --without-nodegroup
+
+eksctl utils associate-iam-oidc-provider  --region ap-southeast-2 --cluster eksdemo1  --approve
+
+eksctl get cluster --region=ap-southeast-2
+
+eksctl create nodegroup --cluster=eksdemo1 \
+                       --region=ap-southeast-2 \
+                       --name=eksdemo1-ng-public1 \
+                       --node-type=t3.medium \
+                       --nodes=2 \
+                       --nodes-min=2 \
+                       --nodes-max=4 \
+                       --node-volume-size=20 \
+                       --ssh-access \
+                       --ssh-public-key=Kube-Demo \
+                       --managed \
+                       --asg-access \
+                       --external-dns-access \
+                       --full-ecr-access \
+                       --appmesh-access \
+                       --alb-ingress-access 
+                       
+eksctl get cluster  --region=ap-southeast-2
+
+eksctl get nodegroup --cluster = eksdemo1
+
+eksctl get nodegroup --cluster=eksdemo1 --region=ap-southeast-2
+
+kubectl get nodes -o wide
+
+kubectl config view --minify
+
+eksctl delete nodegroup --cluster=eksdemo1 --name=eksdemo1-ng-public1 --region=ap-southeast-2
+
+eksctl delete cluster --name=eksdemo1 --region=ap-southeast-2
+
+
+02 Pods With kubectl
+
+kubectl run my-first-pod --image stacksimplify/kubenginx:1.0.0
+
+kubectl get pods 
+
+#Expose pod as service 
+kubectl expose pod my-first-pod  --type=NodePort --port=80 --name=my-first-service
+
+# TO get public ip
+kubectl get nodes -o wide
+
+
+kubectl get pods my-first-pod -o yaml
+
+kubectl get svc my-first-service -o yaml
+
+kubectl get all
+
+#Deployments
+kubectl create deployment my-first-deployment --image=stacksimplify/kubenginx:1.0.0 
+
+kubectl get deploy 
+kubectl get rs
+
+kubectl get
+
+kubectl scale --replicas=20 deployment/my-first-deployment 
+
+# Deploy service to expose port
+kubectl expose deployment my-first-deployment --type=NodePort --port=80 --target-port=80 --name=my-first-deployment-service
+
+#update depoyment 
+
+kubectl get deployment my-first-deployment -o yaml
+
+# set image 
+
+kubectl set image deployment/my-first-deployment kubenginx=stacksimplify/kubenginx:2.0.0 --record=true
+
+#check rollout status
+
+kubectl rollout status deployment/my-first-deployment
+
+#check rollout history 
+
+kubectl rollout history deployment/my-first-deployment  
+
+# Edit Deployment
+
+kubectl edit deployment/my-first-deployment --record=true
+
+(change the yml file and save)
+
+kubectl rollout status deployment/my-first-deployment
+
+ 
+
+# List Deployment History with revision information
+kubectl rollout history deployment/my-first-deployment --revision=1
+kubectl rollout history deployment/my-first-deployment --revision=2
+kubectl rollout history deployment/my-first-deployment --revision=3
+
+
+# Undo Deployment and rollback to previous version
+kubectl rollout undo deployment/my-first-deployment
+
+# Rollback Deployment to Specific Revision
+kubectl rollout undo deployment/my-first-deployment --to-revision=3
+
+
+# Rolling Restarts
+kubectl rollout restart deployment/<Deployment-Name>
+kubectl rollout restart deployment/my-first-deployment
+
+
+# Pause rollout
+kubectl rollout pause deployment my-first-deployment
+
+#update resources
+
+kubectl set resources deployment/my-first-deployment -c=kubenginx --limits=cpu=20m,memory=30Mi
+
+
+# Resume Rollouts
+
+kubectl rollout resume deployment/my-first-deployment
+
+# Cleanup resources
+
+kubectl delete service my-first-deployment-service
+
+kubectl delete deploy my-first-deployment
+
+kubectl get all
+
+
+# Service using kubectl and Nginx as Proxy server and load balancer  
+kubectl create deployment my-backend-rest-app --image=stacksimplify/kube-helloworld:1.0.0
+
+kubectl expose deployment my-backend-rest-app --port=8080 --target-port=8080 --name=my-backend-service
+
+kubectl create deployment my-frontend-nginx-app --image=stacksimplify/kube-frontend-nginx:1.0.0
+
+kubectl expose deployment my-frontend-nginx-app  --type=NodePort --port=80 --target-port=80 --name=my-frontend-service
+
+kubectl scale --replicas=10 deployment/my-backend-rest-app
+
