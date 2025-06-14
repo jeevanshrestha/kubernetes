@@ -1,0 +1,29 @@
+# Create MySQL Database with all above manifests
+# Create MySQL Database
+kubectl apply -f .
+
+# List Storage Classes
+kubectl get sc
+
+# List PVC
+kubectl get pvc 
+
+# List PV
+kubectl get pv
+
+# List pods
+kubectl get pods 
+
+# List pods based on  label name 
+kubectl get pods -l app=mysql 
+
+# Connect to MYSQL Database
+kubectl run -it --rm --image=mysql:5.6 --restart=Never mysql-client -- mysql -h mysql -pdbpassword11
+
+[or]
+
+# Use mysql client latest tag
+kubectl exec -it mysql-deployment-cf89b5c4d-c5rc2 -- /bin/bash
+
+# Verify usermgmt schema got created which we provided in ConfigMap
+mysql> show schemas;
