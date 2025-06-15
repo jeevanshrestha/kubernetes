@@ -29,3 +29,6 @@ kubectl config delete-cluster kubecourse.k8s.local
 
 aws s3 rm $KOPS_STATE_STORE --recursive
 aws s3 rb $KOPS_STATE_STORE
+
+
+kubectl get pods -l app=mysql -o wide
