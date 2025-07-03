@@ -1,0 +1,10 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata: 
+  name: ebs-sc
+  namespace: jeeventus
+provisioner: ebs.csi.aws.com # AWS EBS CSI Driver (For Azure , use `kubernetes.io/azure-disk`)
+volumeBindingMode: WaitForFirstConsumer # This ensures that the volume is not provisioned until a pod is scheduled to use it.
+# parameters:
+#   type: gp2 # General Purpose SSD (For Azure, use `type: Premium_LRS`)
+#   fsType: ext4 # File system type (For Azure, use `fsType: ext4`)

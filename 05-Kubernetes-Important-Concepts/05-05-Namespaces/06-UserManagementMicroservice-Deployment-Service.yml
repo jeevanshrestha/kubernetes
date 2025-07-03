@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-management-microservice
+  namespace: jeeventus # This deployment is created in the 'jeeventus' namespace
+  labels:
+    app: user-management-restapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-management-restapp
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: user-management-restapp
+    spec:
+      restartPolicy: Always
+      initContainers:   # This section defines the init container that runs before the main application container. Same as depends on in docker-compose
+        - name: init-db
+          image: busybox:1.31 # Using a lightweight image for the init container
+          command: ['sh', '-c', 'echo -e "Checking for the availability of MySQL Server deployment"; while ! nc -z mysql-clusterip-service 3306; do sleep 1; printf "-"; done; echo -e "  >> MySQL DB Server has started";']
+          # This init container checks if the MySQL server is up and running before starting the main application container.
+          # It uses the 'nc' command to check the availability of the MySQL server on port 3306.
+      containers:
+        - name: user-management-restapp
+          image:  stacksimplify/kube-usermanagement-microservice:1.0.0 # Replace with your actual image name
+          ports:
+            - containerPort: 8095 # Replace with the port your application listens on 
+          env:
+            - name: DB_HOSTNAME
+              value:   "mysql-clusterip-service" # This should match the name of the MySQL service
+            - name: DB_PORT
+              value: "3306"            
+            - name: DB_NAME
+              value: "usermgmt"            
+            - name: DB_USERNAME
+              value: "root"            
+            - name: DB_PASSWORD
+            #  value: "rootpassword" # Ensure this matches the MySQL root password
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-db-password # Reference to the Secret created in 08-kubernetes-secret.yml
+                  key: db-password # This Secret contains the MySQL root password
+
+          livenessProbe: # This probe checks if the application is alive and running (if not, it will restart the container)
+          # This probe checks if the application is alive and running (if not, it will restart the container)
+            exec:
+              command:
+                - bin/sh
+                - -c
+                - nc -z localhost 8095
+            initialDelaySeconds: 60
+            periodSeconds: 10
+
+          # Readiness probe checks if the application is ready to accept traffic 
+          readinessProbe:  
+            httpGet:
+              path: /usermgmt/health-status
+              port: 8095  
+            initialDelaySeconds: 60
+            periodSeconds: 10 
+
+          # resources:
+          #   requests:
+          #     memory: "512Mi"  # 512Mi = 512 * 1024 * 1024 bytes = 536,870,912 bytes = 512 MB
+          #     cpu: "250m"      # Reasonable CPU request # 250m = 0.25 CPU core
+          #   limits:
+          #     memory: "1Gi"    # Increase limit to 1GB (Java apps often need more)
+          #     cpu: "500m"      # Keep CPU limit moderate #   500m = 0.5 CPU core

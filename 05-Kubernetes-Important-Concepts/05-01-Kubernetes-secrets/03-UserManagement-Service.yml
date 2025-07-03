@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-management-config-script
+data:
+  mysql_usermgmt.sql: |- # This is a ConfigMap that contains the SQL script for user management
+    -- MySQL script to create a database and user management table
+     -- Drop the database if it exists
+    CREATE DATABASE IF NOT EXISTS usermgmt;
+    USE usermgmt;
+ 

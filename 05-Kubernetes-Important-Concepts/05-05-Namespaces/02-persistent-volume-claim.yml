@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ebs-mysql-pv-claim # Name of the PersistentVolumeClaim
+  namespace: jeeventus
+spec:
+  accessModes:
+    - ReadWriteOnce # This means the volume can be mounted as read-write by a single node
+  resources:
+    requests:
+      storage: 4Gi # Requesting 4 GiB of storage
+  storageClassName: ebs-sc # This should match the StorageClass defined in 01-storage-class.yml 

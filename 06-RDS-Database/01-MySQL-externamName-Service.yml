@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-externalname-service # Name of the service
+  namespace: jeeventus
+spec:
+  type: ExternalName # This service type is used to map a service to an external DNS name
+  externalName: dbusermanagementdb.cd8q0uocuboo.ap-southeast-2.rds.amazonaws.com # The external DNS name that this service will map to
+  # Note: This allows the service to be accessed using the external DNS name instead of the internal cluster IP
+  # This is useful for services that are not running within the Kubernetes cluster but need to be accessed by other services in the cluster

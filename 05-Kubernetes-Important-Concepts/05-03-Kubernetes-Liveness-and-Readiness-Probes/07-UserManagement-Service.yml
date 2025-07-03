@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-management-service # Name of the service
+  labels:
+    app: user-management-restapp # This label should match the labels defined in the User Management microservice deployment 
+spec:
+  type: NodePort # This service type is used for internal communication within the cluster
+  selector:
+    app: user-management-restapp # This should match the labels defined in the User Management microservice deployment
+  ports:
+    - port: 8095 # The port that the service will expose
+      targetPort: 8095 # This should match the name of the port defined in the User Management microservice deployment
+      protocol: TCP # Protocol used by the service
+      nodePort: 30095 # NodePort to expose the service on each node in the cluster
+      # Note: NodePort is used for external access to the service, allowing it to be accessed from outside the cluster 

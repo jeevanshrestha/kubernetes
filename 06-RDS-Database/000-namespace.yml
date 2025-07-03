@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jeeventus
+
+---
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: ns-limit-range
+  namespace: jeeventus
+spec:
+  limits:
+    - default:
+        memory: "1Gi" # If not specified, the container's memory limit is set to 1Gi.
+        cpu: "500m"   # If not specified, default limit is 500m CPU per container.
+      defaultRequest:
+        memory: "512Mi" # If not specified, default request is 512Mi memory.
+        cpu: "300m"     # If not specified, default request is 300m CPU.
+      type: Container   # This specifies that the limits apply to containers within the namespace.
+
+---
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: ns-resource-quota
+  namespace: jeeventus
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi  
+    pods: "5"    
+    configmaps: "5" 
+    persistentvolumeclaims: "5" 
+    replicationcontrollers: "5" 
+    secrets: "5" 
+    services: "5"    

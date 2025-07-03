@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+  labels:
+    app: mysql  
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: RollingUpdate # Use RollingUpdate strategy for deployment updates
+    rollingUpdate:
+      maxUnavailable: 0  # Ensures the old pod isn't terminated until the new one is ready
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      restartPolicy: Always # Ensures the pod is restarted if it fails
+      containers:
+        - name: mysql
+          image: mysql:5.7
+          env:
+              - name: MYSQL_ROOT_PASSWORD
+                value: rootpassword
+              - name: MYSQL_DATABASE
+                value: usermgmt
+          ports:
+            - containerPort: 3306
+              name: mysql-port
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: ebs-mysql-pv-claim

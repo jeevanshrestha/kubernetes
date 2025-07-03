@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-management-service
+  namespace: jeeventus
+  labels:
+    app: user-management-restapp
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"  # Explicitly specify AWS LB
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"  # Make it public
+spec:
+  type: LoadBalancer  # Changed from NodePort to LoadBalancer
+  selector:
+    app: user-management-restapp
+  ports:
+    - port: 8095      # Port the LB will listen on
+      targetPort: 8095  # Port your app listens on
+      protocol: TCP
+  # Removed nodePort as it's not needed for LoadBalancer
