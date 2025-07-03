@@ -22,9 +22,7 @@ eksctl create nodegroup --cluster=eksdemo1 \
                        --alb-ingress-access 
                        
 eksctl get cluster  --region=ap-southeast-2
-
-eksctl get nodegroup --cluster = eksdemo1
-
+ 
 eksctl get nodegroup --cluster=eksdemo1 --region=ap-southeast-2
 
 kubectl get nodes -o wide
@@ -144,15 +142,21 @@ kubectl expose deployment my-frontend-nginx-app  --type=NodePort --port=80 --tar
 
 kubectl scale --replicas=10 deployment/my-backend-rest-app
 
+
+# Install AWS EBS CLI Driver
+kubectl apply -k "github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable/?ref=release-1.44"
+
+aws iam create-policy \
+  --policy-name Amazon_EBS_CSI_Driver_Policy \
+  --policy-document file://ebs-csi-policy.json
+  
+
 #Get Worker noder IAM Role ARN
 kubectl -n kube-system describe configmap aws-auth
 
 rolearn: arn:aws:iam::480926032159:role/eksctl-eksdemo1-nodegroup-eksdemo1-NodeInstanceRole-eEEfXWC301ey
 
-# Install AWS EBS CLI Driver
-kubectl apply -k "github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable/?ref=release-1.44"
-
- kubectl get pods -n kube-system
+kubectl get pods -n kube-system
 
 
  #Base 64 encode 

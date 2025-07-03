@@ -1,0 +1,194 @@
+## AWS EKS START Notes
+### Cluster Name: supercluster
+### NodeGroup Name: super-ng-public
+### EKS DB SG:  super_eks_rds_db_sg
+## EKS RDS DB Subnet Group:  super_eks-rds-db-subnetgroup
+## MySQL DB Name: usermanagement
+## Instances : t3.micro
+## Operating SysteM: Ubuntu
+
+
+eksctl create cluster --name supercluster  --region=ap-southeast-2 --zones=ap-southeast-2a,ap-southeast-2b --without-nodegroup
+
+eksctl utils associate-iam-oidc-provider  --region ap-southeast-2 --cluster supercluster  --approve
+
+
+eksctl get cluster --region=ap-southeast-2
+
+eksctl create nodegroup --cluster=supercluster \
+                       --region=ap-southeast-2 \
+                       --name=super-ng-public \
+                       --node-type=t3.micro \
+                       --nodes=2 \
+                       --nodes-min=2 \
+                       --nodes-max=4 \
+                       --node-volume-size=20 \
+                       --ssh-access \
+                       --ssh-public-key=Kube-Demo \
+                       --managed \
+                       --asg-access \
+                       --external-dns-access \
+                       --full-ecr-access \
+                       --appmesh-access \
+                       --alb-ingress-access 
+ 
+eksctl get  nodegroup --cluster=supercluster --region=ap-southeast-2
+
+# Install AWS EBS CLI Driver
+kubectl apply -k "github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable/?ref=release-1.44"
+
+aws iam create-policy \
+  --policy-name Amazon_EBS_CSI_Driver_Policy \
+  --policy-document file://ebs-csi-policy.json
+  
+
+#Get Worker noder IAM Role ARN
+kubectl -n kube-system describe configmap aws-auth
+#copy eksctl-supercluster-nodegroup-jee-NodeInstanceRole-6XcYAcKVCOQ7 from  
+#rolearn: arn:aws:iam::480926032159:role/eksctl-supercluster-nodegroup-jee-NodeInstanceRole-6XcYAcKVCOQ7
+
+#Get info about the policy 
+aws iam list-policies --query "Policies[?PolicyName=='Amazon_EBS_CSI_Driver_Policy']"
+#Copy arn:aws:iam::480926032159:policy/Amazon_EBS_CSI_Driver_Policy
+
+# Attach policy to the role
+aws iam attach-role-policy \
+  --policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
+  --role-name eksctl-supercluster-nodegroup-jee-NodeInstanceRole-6XcYAcKVCOQ7
+
+# Check the policies attached to the role
+aws iam list-attached-role-policies   --role-name eksctl-supercluster-nodegroup-jee-NodeInstanceRole-6XcYAcKVCOQ7
+
+#
+eksctl get nodegroup --cluster supercluster --region ap-southeast-2 -o yaml
+# Get security groups attached
+
+aws ec2 describe-security-groups \
+  --region ap-southeast-2 \
+  --filters Name=group-name,Values="*remoteAccess*" \
+  --query 'SecurityGroups[*].GroupId' \
+  --output text
+
+# copy SG - ID
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-054fbe043e71e9bda \
+  --protocol all \
+  --port all \
+  --cidr 0.0.0.0/0 \
+  --region ap-southeast-2
+
+#Check Configuration
+kubectl get pods mysql-deployment-7464fc67b9-lcgb5 -n jeeventus -o yaml
+
+
+kubectl exec -it mysql-client -c server -- /bin/sh
+
+#Delete all
+ 
+eksctl delete nodegroup \
+  --cluster=supercluster \
+  --region=ap-southeast-2 \
+  --name=super-ng-public \
+  --disable-eviction
+ 
+
+eksctl delete cluster --name=  --cluster=supercluster  --region=ap-southeast-2
+
+## Delete IAM EBS CSI Driver policy
+aws iam delete-policy \
+  --policy-arn arn:aws:iam::480926032159:policy/Amazon_EBS_CSI_Driver_Policy
+
+
+# Create Security SecurityGroup for RDS
+ aws ec2 create-security-group \
+  --group-name super_eks_rds_db_sg \
+  --description "Allow MySQL port 3306 from anywhere" \
+  --vpc-id vpc-04a4394a6464a274b \
+  --region ap-southeast-2
+
+# Allow port 3306
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-056ebf9932919523f \
+  --protocol tcp \
+  --port 3306 \
+  --cidr 0.0.0.0/0 \
+  --region ap-southeast-2
+
+
+## Create RDS DB Subnet Group
+aws rds create-db-subnet-group \
+  --db-subnet-group-name super_eks-rds-db-subnetgroup \
+  --db-subnet-group-description "Subnet group for EKS RDS private subnets" \
+  --subnet-ids subnet-0cac0daf4a4d6f39a subnet-06413f78751e0bff1 \
+  --tags Key=Name,Value=eks-rds-db-subnetgroup \
+  --region ap-southeast-2
+
+  aws ec2 describe-subnets \
+  --filters "Name=vpc-id,Values=vpc-04a4394a6464a274b" \
+  --query "Subnets[?contains(['192.168.64.0/19','192.168.96.0/19'], CidrBlock)] | [].{ID:SubnetId,CIDR:CidrBlock,AZ:AvailabilityZone}" \
+  --region ap-southeast-2
+[
+    {
+        "ID": "subnet-0cac0daf4a4d6f39a",
+        "CIDR": "192.168.64.0/19",
+        "AZ": "ap-southeast-2a"
+    },
+    {
+        "ID": "subnet-06413f78751e0bff1",
+        "CIDR": "192.168.96.0/19",
+        "AZ": "ap-southeast-2b"
+    }
+]
+
+aws rds create-db-instance \
+    --db-instance-identifier dbusermanagementdb \
+    --allocated-storage 20 \
+    --db-instance-class db.t3.micro \
+    --engine mysql \
+    --engine-version 8.0 \
+    --master-username dbadmin \
+    --master-user-password dbpassword11 \
+    --db-name usermanagement \
+    --vpc-security-group-ids sg-056ebf9932919523f \
+    --db-subnet-group-name eks-rds-db-subnetgroup \
+    --port 3306 \
+    --no-publicly-accessible \
+    --storage-type gp2 \
+    --backup-retention-period 7 \
+    --no-multi-az \
+    --auto-minor-version-upgrade \
+    --tags Key=Name,Value=dbusermanagementdb \
+    --region ap-southeast-2
+
+aws ec2 create-security-group \
+  --group-name super_eks_rds_db_sg \
+  --description "Allow MySQL port 3306 from anywhere" \
+  --vpc-id vpc-04a4394a6464a274b \
+  --region ap-southeast-2
+{
+    "GroupId": "sg-056ebf9932919523f",
+    "SecurityGroupArn": "arn:aws:ec2:ap-southeast-2:480926032159:security-group/sg-056ebf9932919523f"
+}
+
+# Get Database Endpoint
+
+aws rds describe-db-instances \
+  --db-instance-identifier dbusermanagementdb \
+  --query "DBInstances[0].Endpoint" \
+  --region ap-southeast-2
+{
+    "Address": "dbusermanagementdb.cd8q0uocuboo.ap-southeast-2.rds.amazonaws.com",
+    "Port": 3306,
+    "HostedZoneId": "Z32T0VRHXEXS0V"
+}
+
+
+aws eks --region ap-southeast-2 update-kubeconfig --name supercluster
+
+kubectl cluster-info
+
+# List all the available clusters
+# * means the current default cluster
+kubectl config get-contexts
+
+kubectl run -it --rm --image=mysql:latest --restart=Never mysql-client -n jeeventus -- mysql -h dbusermanagementdb.cd8q0uocuboo.ap-southeast-2.rds.amazonaws.com -u dbadmin -pdbpassword11
